@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import { AppController } from './app.controller';
@@ -8,16 +9,20 @@ import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.development.env', '.production.env'],
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'root',
-      database: 'db-admin',
+      port: parseInt(process.env.DB_PORT),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
       entities: [Product],
-      autoLoadEntities: true,
-      synchronize: true,
+      autoLoadEntities: process.env.NODE_ENV === 'development' ? true : false,
+      synchronize: process.env.NODE_ENV === 'development' ? true : false,
     }),
     ProductsModule,
   ],
